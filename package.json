@@ -17,6 +17,6 @@
     "fs-extra": "^10.0.0",
     "googleapis": "^85.0.0",
     "jsdom": "^17.0.0",
-    "selenium-webdriver": "4.0.0-rc-1"
+    "selenium-webdriver": "4.0.0-beta.4"
   }
 }
