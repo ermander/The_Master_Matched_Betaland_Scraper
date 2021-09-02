@@ -45,6 +45,7 @@ const betalandScraper = async (
   // Creating the chrome options
   const options = new chrome.Options();
   options.windowSize({ width: 1500, height: 850 });
+  options.headless();
   // Initiating selenium web driver
   let driver = await new Builder()
     .forBrowser("chrome")
@@ -152,10 +153,9 @@ const betalandScraper = async (
     }
   }
   // Uploading the odds to google drive
-  let betalandOddsFile = JSON.stringify(betalandOdds);
 
   try {
-    const response = await drive.files.update({
+    await drive.files.update({
       fileId: "1rJIlZo_3z45QwP_XR-jV5xdHUEFIC9fF",
       media: {
         mimeType: "application/json",
