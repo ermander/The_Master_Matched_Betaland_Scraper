@@ -12,6 +12,10 @@ const betalandScraper = require("./Betaland/betalandScraper");
 // Importing all the links to scrape for each function
 const betalandLinks = require("./Betaland/Links/betalandLinks");
 
+const dotenv = require("dotenv");
+// Dotenv configuration
+dotenv.config();
+
 /* 
   Some times the scraping functions needs some breaks between tasks
   Here we're creating a function that stops the code if needed.
@@ -24,9 +28,8 @@ function sleep(ms) {
 const mainScraper = async () => {
   // Scraping Betaland
   console.log("Starting to scrape Betaland odds.");
-  let betalandWhileStatus = true;
   let betalandOdds = [];
-  while (betalandWhileStatus) {
+  while (true) {
     const betalandOddsResult = await betalandScraper(
       chrome,
       Builder,
@@ -35,18 +38,6 @@ const mainScraper = async () => {
       betalandLinks,
       sleep
     );
-    if (betalandOddsResult.error) {
-      betalandWhileStatus = true; /*
-    Implement the console.log() of the specific error
-  */
-      console.log(
-        "I'm restarting the scraping function for Betaland due to some errors"
-      );
-    } else {
-      betalandWhileStatus = false;
-      console.log("The process of scraping Betaland has finished successfully");
-      betalandOdds = betalandOddsResult;
-    }
   }
 };
 mainScraper();

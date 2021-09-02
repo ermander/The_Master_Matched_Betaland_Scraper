@@ -1,5 +1,31 @@
 const fs = require("fs");
 
+// Google
+const { google } = require("googleapis");
+const CLIENT_ID =
+  "380825532247-ms7fb2sics98gidpja5mkolkoec9feor.apps.googleusercontent.com";
+const REDIRECT_URI = "https://developers.google.com/oauthplayground";
+const REFRESH_TOKEN =
+  "1//04QKJjcHQKpZZCgYIARAAGAQSNwF-L9IrDUrg8AhKs294_PKGmp-dgxlNJFdlTHPhiquI96hLlxOmfR3371ptoAznCOjlUOabUts";
+const CLIENT_SECRET = "NCxvcASUE08q3XKS8ZLx62XA";
+
+// Creating the authentication object
+const oauth2Client = new google.auth.OAuth2(
+  CLIENT_ID,
+  CLIENT_SECRET,
+  REDIRECT_URI
+);
+
+oauth2Client.setCredentials({
+  refresh_token: REFRESH_TOKEN,
+});
+
+// Create an istance of google drive
+const drive = google.drive({
+  version: "v3",
+  auth: oauth2Client,
+});
+
 // Scraping Functions
 const oneXTwoOddsScraper = require("./Scraping Functions/oneXTwoOddsScraper");
 const homeScraper = require("./Scraping Functions/homeScraper");
@@ -19,12 +45,8 @@ const betalandScraper = async (
   // Creating the chrome options
   const options = new chrome.Options();
   options.windowSize({ width: 1500, height: 850 });
-  // Setting the strategies of the page load
-  const caps = new Capabilities();
-  caps.setPageLoadStrategy("normal");
   // Initiating selenium web driver
   let driver = await new Builder()
-    .withCapabilities(caps)
     .forBrowser("chrome")
     .setChromeOptions(options)
     .build();
@@ -34,19 +56,9 @@ const betalandScraper = async (
   // Creating the array that will contain the infoes of all the GoldBet Soccer Matches
   let betalandOdds = [];
 
-  // Looping throw all the links in order to open all of them
   for (let i = 0; i < links.length; i++) {
-    // Opening a new windows tab
-    await driver.switchTo().newWindow("tab");
-    // Navigate to Url
     await driver.get(links[i]);
-  }
-
-  // Getting the id of all the tabs opened
-  const allWindows = await driver.getAllWindowHandles();
-  for (let i = 1; i < allWindows.length; i++) {
-    await driver.switchTo().window(allWindows[i]);
-    await sleep(100);
+    await sleep(500);
     console.log("Scraping:    ", await driver.getCurrentUrl());
 
     try {
@@ -137,14 +149,26 @@ const betalandScraper = async (
       betalandOdds = [...betalandOdds, ...temporaryOdds];
     } catch (error) {
       console.log(error);
-      return error;
     }
-
-    driver.close();
   }
+  // Uploading the odds to google drive
   let betalandOddsFile = JSON.stringify(betalandOdds);
-  fs.writeFileSync("betalandOdds.json", betalandOddsFile);
-  driver.quit();
+
+  try {
+    const response = await drive.files.update({
+      fileId: "1rJIlZo_3z45QwP_XR-jV5xdHUEFIC9fF",
+      media: {
+        mimeType: "application/json",
+        body: betalandOddsFile,
+      },
+    });
+    //const response = await drive.files.list();
+    console.log(response);
+  } catch (error) {
+    console.log(error);
+  }
+
+  driver.close();
   return betalandOdds;
 };
 
