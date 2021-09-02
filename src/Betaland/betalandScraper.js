@@ -162,8 +162,6 @@ const betalandScraper = async (
         body: betalandOddsFile,
       },
     });
-    //const response = await drive.files.list();
-    console.log(response);
   } catch (error) {
     console.log(error);
   }
